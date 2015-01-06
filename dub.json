@@ -1,0 +1,18 @@
+{
+  "name": "fpdf",
+  "description": "Library for generating PDF documents.",
+	"authors": [ "Olivier Plathey", "Jason den Dulk" ],
+	"license": "BSL-1.0",
+  "platforms": ["posix"],
+  "targetType": "sourceLibrary",
+
+
+  "configurations": [
+		{
+			"name": "test",
+			"targetType": "executable",
+      "platforms": ["posix"],
+      "mainSourceFile": "src/test.d"
+		}
+  ]
+}
