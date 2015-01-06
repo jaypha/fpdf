@@ -1,6 +1,13 @@
+// Written in the D language.
+/*
+ * Distributed under the Boost License V1.0.
+ *
+ * Original Author Olivier Plathey
+ * D translation by Jason den Dulk.
+ */
 
 
-module fpdf.fonts;
+module jaypha.fpdf_fonts;
 
 import std.exception;
 
