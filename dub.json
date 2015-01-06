@@ -5,14 +5,17 @@
 	"license": "BSL-1.0",
   "platforms": ["posix"],
   "targetType": "sourceLibrary",
+	"dependencies": {
+    "imageformats" : ""
+  },
 
 
   "configurations": [
 		{
-			"name": "test",
+			"name": "sample",
 			"targetType": "executable",
       "platforms": ["posix"],
-      "mainSourceFile": "src/test.d"
+      "mainSourceFile": "src/sample.d"
 		}
   ]
 }
