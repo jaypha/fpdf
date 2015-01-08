@@ -39,3 +39,9 @@ Write() currently only supports external links. I need to find a way to support 
 external and internal links.
 
 GIF support.
+
+Current Problems
+----------------
+
+Linker is unable to find imageformats code. Placing a copy of imageformats.d into your
+project fixes this.
