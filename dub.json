@@ -1,6 +1,6 @@
 {
   "name": "fpdf",
-  "description": "Library for generating PDF documents.",
+  "description": "Minimalist class for generating PDF documents.",
   "authors": [ "Jason den Dulk" ],
   "license": "BSL-1.0",
   "platforms": ["posix"],
