@@ -704,21 +704,27 @@ class Fpdf
 
   //---------------------------------
 
+  struct _rect
+  {
+    float x,y,w,h;
+  }
+
+
   void Cell(float w, float h, string txt, string border, ulong ln, string algn, bool fill, ulong link)
   {
-    auto dx = _cell(w, h, txt, border, ln, algn, fill);
-    if (!link.empty && !txt.empty)
-      Link(this.x+dx,this.y+.5*h-.5*FontSize,GetStringWidth(txt),FontSize,link);
+    auto r = _cell(w, h, txt, border, ln, algn, fill);
+    if (!txt.empty)
+      Link(r.x,r.y,r.w,r.h,link);
   }
 
-  void Cell(float w, float h=0, string txt="", string border="0", ulong ln=0, string algn="", bool fill=false, T link=null)
+  void Cell(float w, float h=0, string txt="", string border="0", ulong ln=0, string algn="", bool fill=false, string link=null)
   {
-    auto dx = _cell(w, h, txt, border, ln, algn, fill);
+    auto r = _cell(w, h, txt, border, ln, algn, fill);
     if (!link.empty && !txt.empty)
-      Link(this.x+dx,this.y+.5*h-.5*FontSize,GetStringWidth(txt),FontSize,link);
+      Link(r.x,r.y,r.w,r.h,link);
   }
 
-  private float _cell(float w, float h, string txt, string border, ulong ln, string algn, bool fill)
+  _rect _cell(float w, float h, string txt, string border, ulong ln, string algn, bool fill)
   {
     // Output a cell
 
@@ -762,10 +768,11 @@ class Fpdf
     if (indexOf(border,'B')!=-1)
       s ~= format("%.2F %.2F m %.2F %.2F l S ",x*k,(this.h-(y+h))*k,(x+w)*k,(this.h-(y+h))*k);
 
-    float dx;
+    _rect r;
 
     if (!txt.empty)
     {
+      float dx;
       if(algn=="R")
         dx = w-cMargin-GetStringWidth(txt);
       else if (algn=="C")
@@ -780,6 +787,7 @@ class Fpdf
       s ~= " "~_dounderline(x+dx,y+0.5*h+0.3*FontSize,txt);
       if (ColorFlag)
         s ~= " Q";
+      r = _rect(this.x+dx, this.y+0.5*h-0.5*FontSize, GetStringWidth(txt),FontSize);
     }
     if(s)
       _out(s);
@@ -794,7 +802,7 @@ class Fpdf
     else
       this.x += w;
 
-    return dx;
+    return r;
   }
 
   //-----------------------------------
@@ -1014,16 +1022,10 @@ class Fpdf
 
   //-----------------------------------
 
-  struct Rect
-  {
-    float x,y,w,h;
-  }
-
   void Image(string file, float x, float y, float w, float h, string type, ulong link)
   {
     auto r = _image(file, x, y, w, h, type);
-    if(!link.empty)
-      Link(r.x,r.y,r.w,r.h,link);
+    Link(r.x,r.y,r.w,r.h,link);
   }
 
   void Image(string file, float x=-1, float y=-1, float w=0, float h=0, string type=null, string link=null)
@@ -1033,7 +1035,7 @@ class Fpdf
       Link(r.x,r.y,r.w,r.h,link);
   }
 
-  private Rect _image(file, float x, float y, float w, float h, string type)
+  private _rect _image(string file, float x, float y, float w, float h, string type)
   {
 
     // Put an image on the page
@@ -1104,7 +1106,7 @@ class Fpdf
       x = this.x;
     _out(format("q %.2F 0 0 %.2F %.2F %.2F cm /I%d Do Q", w*k, h*k, x*k, (this.h-(y+h))*k, info.i));
 
-    auto r = Rect(x,y,w,h);
+    auto r = _rect(x,y,w,h);
     return r;
   }
 
@@ -1126,11 +1128,11 @@ class Fpdf
 
   //-----------------------------------
 
-  string Output()
+  immutable(ubyte)[] Output()
   {
     if(state<3)
       Close();
-    return buffer.data;
+    return cast(immutable(ubyte)[]) buffer.data;
   }
 
   //------------------------------------------------------------
