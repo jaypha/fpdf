@@ -7,9 +7,12 @@ tried to stay as fatithful as possible to the PHP version. The following differe
 * Output() only gives back a ubyte array. No direct output to a file or stdout.
 * Only builtin fonts are supported. (I can't figure out how they work in PDF).
 * Only ISO-8859-1. No Unicode support.
+* No GIF support.
 
 This should not be considered a full solution to the need for PDF support in D, but a
 minimalist one.
+
+Note. If you don't need to be able to import PDFs, you should check out harud.
 
 Documentation
 -------------
@@ -35,10 +38,7 @@ Distributed under the Boost License.
 Todo
 ----
 
-Write() currently only supports external links. I need to find a way to support both
-external and internal links.
-
-GIF support.
+Port FPDI, which allows the importation of existing PDF documents.
 
 Current Problems
 ----------------

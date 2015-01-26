@@ -925,9 +925,17 @@ class Fpdf
 
   //-----------------------------------
 
-  // TODO improve link.
-
   void Write(float h, string txt, string link=null)
+  {
+    _write(h, txt, link);
+  }
+
+  void Write(float h, string txt, ulong link)
+  {
+    _write(h, txt, link);
+  }
+
+  void _write(T)(float h, string txt, T link)
   {
     // Output text in flowing mode
     auto cw = CurrentFont.cw;
@@ -1424,9 +1432,11 @@ class Fpdf
       return bigEndianToNative!uint(_readstream(f,4)[0..4]);
     }
 
-void _parsegif(string file)
-{
-}
+    /+
+    void _parsegif(string file)
+    {
+    }
+    +/
 
     void _newobj()
     {
