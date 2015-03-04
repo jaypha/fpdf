@@ -458,7 +458,9 @@ class Fpdf
     if(page>0)
      _out(DrawColor);
   }
-  
+
+  //-----------------------------------
+
   void SetDrawColor(ulong r, ulong g, ulong b)
   {
     // Set color for all stroking operations
@@ -466,6 +468,8 @@ class Fpdf
     if(page>0)
      _out(DrawColor);
   }
+
+  //-----------------------------------
 
   void SetFillColor(ulong r)
   {
@@ -485,6 +489,8 @@ class Fpdf
       _out(FillColor);
   }
 
+  //-----------------------------------
+
   void SetTextColor(ulong r)
   {
     TextColor = format("%.3F g",to!float(r)/255);
@@ -497,6 +503,8 @@ class Fpdf
     ColorFlag = (FillColor!=TextColor);
   }
 
+  //-----------------------------------
+
   float GetStringWidth(string s)
   {
     // Get width of a string in the current font
@@ -508,6 +516,8 @@ class Fpdf
     return w*FontSize/1000;
   }
 
+  //-----------------------------------
+
   void SetLineWidth(float width)
   {
     // Set line width
@@ -516,11 +526,15 @@ class Fpdf
       _out(format("%.2F w",width*k));
   }
 
+  //-----------------------------------
+
   void Line(float x1, float y1, float x2, float y2)
   {
     // Draw a line
     _out(format("%.2F %.2F m %.2F %.2F l S",x1*k,(h-y1)*k,x2*k,(h-y2)*k));
   }
+
+  //-----------------------------------
 
   void Rect(float x, float y, float w, float h, string style="")
   {
@@ -532,8 +546,10 @@ class Fpdf
       op = 'B';
     else
       op = 'S';
-    _out(format("%.2F %.2F %.2F %.2F re %c",x*k,(h-y)*k,w*k,-h*k,op));
+    _out(format("%.2F %.2F %.2F %.2F re %c",x*k,(this.h-y)*k,w*k,-h*k,op));
   }
+
+  //-----------------------------------
 
   void AddFont(string family, string style, string file)
   {
@@ -574,6 +590,8 @@ class Fpdf
     fonts[fontkey] = info;
 +/
   }
+
+  //-----------------------------------
 
   void SetFont(string family, string style=null, float size=0)
   {
@@ -1016,6 +1034,8 @@ class Fpdf
       Cell(l/1000*FontSize,h,s[j..$],"0",0L,"",false,link);
   }
 
+  //-----------------------------------
+
   void Ln()
   {
     Ln(lasth);
@@ -1054,7 +1074,7 @@ class Fpdf
       // First use of this image, get info
       if (type.empty)
       {
-        auto pos = indexOf(file,'.');
+        auto pos = lastIndexOf(file,'.');
         if(pos <=0)
           throw new Exception("Image file has no extension and no type was specified: "~file);
         type = file[pos+1..$];
@@ -1846,4 +1866,119 @@ class Fpdf
     }
 
     //---------------------------------
+}
+
+//----------------------------------------------------------------------------
+// An addon to help construct tables.
+
+struct FpdfTable
+//----------------------------------------------------------------------------
+{
+  Fpdf fpdf;
+  float[] widths;
+  string[] aligns;
+
+  void SetWidths(float[] w)
+  {
+    //Set the array of column widths
+    widths = w;
+  }
+
+  void SetAligns(string[] a)
+  {
+    //Set the array of column alignments
+    aligns = a;
+  }
+
+  void Row(string[] data, float lh)
+  {
+    //Calculate the height of the row
+    ulong nb=0;
+
+    for(ulong i=0;i<data.length;++i)
+      nb=max(nb,NbLines(widths[i],data[i]));
+    auto h = lh * nb;
+
+    //Issue a page break first if needed
+    CheckPageBreak(h);
+
+    //Draw the cells of the row
+    for(ulong i=0; i<data.length;++i)
+    {
+        auto w=widths[i];
+        auto a= (i<aligns.length) ? aligns[i] : "L";
+        //Save the current position
+        auto x=fpdf.GetX();
+        auto y=fpdf.GetY();
+        //Draw the border
+        fpdf.Rect(x,y,w,h);
+        //Print the text
+        fpdf.MultiCell(w,lh,data[i],"0",a);
+        //Put the position to the right of the cell
+        fpdf.SetXY(x+w,y);
+    }
+    //Go to the next line
+    fpdf.Ln(h);
+  }
+
+  void CheckPageBreak(float h)
+  {
+    //If the height h would cause an overflow, add a new page immediately
+    if (fpdf.GetY()+h > fpdf.PageBreakTrigger)
+      fpdf.AddPage(fpdf.CurOrientation);
+  }
+
+  ulong NbLines(float w, string txt)
+  {
+    //Computes the number of lines a MultiCell of width w will take
+    auto cw = fpdf.CurrentFont.cw;
+    if(w==0)
+      w = fpdf.w-fpdf.rMargin-fpdf.x;
+    auto wmax=(w-2*fpdf.cMargin)*1000/fpdf.FontSize;
+    auto s=txt.replace("\r","");
+    auto nb=s.length;
+
+    if (nb>0 && s[$-1]=='\n')
+      --nb;
+
+    auto sep=-1;
+    auto i=0;
+    auto j=0;
+    auto l=0;
+    auto nl=1;
+
+    while(i<nb)
+    {
+      auto c= s[i];
+      if(c=='\n')
+      {
+        ++i;
+        sep=-1;
+        j=i;
+        l=0;
+        nl++;
+        continue;
+      }
+      if(c==' ')
+        sep=i;
+      l += cw[c];
+      if (l> wmax)
+      {
+        if(sep==-1)
+        {
+          if(i==j)
+            i++;
+        }
+        else
+          i=sep+1;
+        sep=-1;
+        j=i;
+        l=0;
+        nl++;
+      }
+      else
+        ++i;
+    }
+    return nl;
+  }
 }
