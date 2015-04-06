@@ -53,19 +53,19 @@ class Fpdf
   struct LinkInfo
   {
     float x,y,w,h;
-    ulong link;
+    size_t link;
     string externalLink;
   }
   struct LinkDest
   {
-    ulong page;
+    size_t page;
     float y;
   }
 
   struct ImageInfo
   {
-    ulong i,n;
-    ulong w,h;
+    size_t i,n;
+    size_t w,h;
     string cs;  // Color space
     uint bpc; // Bits per component.
     string f; // Filter
@@ -77,21 +77,21 @@ class Fpdf
   }
 
   protected:
-    ulong page = 0;
-    ulong n = 2;
-    ulong[] offsets;
+    size_t page = 0;
+    size_t n = 2;
+    size_t[] offsets;
     Appender!string buffer;
 
     uint state = 0;                // current document state
 
-    Appender!(string)[ulong] pages;     // array containing pages
+    Appender!(string)[size_t] pages;     // array containing pages
     bool compress = true;                 // compression flag
     float k;                       // scale factor (number of points in user unit)
     char DefOrientation;    // default orientation
     char CurOrientation;    // current orientation
     float[2] DefPageSize;          // default page size
     float[2] CurPageSize;          // current page size
-    float[2][ulong] PageSizes;             // used for pages with non default sizes or orientations
+    float[2][size_t] PageSizes;             // used for pages with non default sizes or orientations
     float wPt, hPt;                // dimensions of current page in points
     float w, h;                    // dimensions of current page in user unit
     float lMargin;                 // left margin
@@ -117,7 +117,7 @@ class Fpdf
     string TextColor;              // commands for text color
     bool ColorFlag;                // indicates whether fill and text colors are different
     float ws = 0.0;                // word spacing
-    LinkInfo[][ulong] PageLinks;     // array of links in pages
+    LinkInfo[][size_t] PageLinks;     // array of links in pages
     LinkDest[] links;                  // array of internal links
     bool AutoPageBreak;            // automatic page breaking
     float PageBreakTrigger;        // threshold used to trigger page breaks
@@ -136,11 +136,11 @@ class Fpdf
 
     // Image files;
     ImageInfo[] images;
-    ulong[string] imageInfoIdx;
+    size_t[string] imageInfoIdx;
 
     // Fonts
     FontInfo[] fonts;
-    ulong[string] fontInfoIdx;
+    size_t[string] fontInfoIdx;
 
   public:
 
@@ -1397,13 +1397,13 @@ class Fpdf
           // Extract alpha imformation from Gray image
           auto len = 2*info.w;
 
-          for(auto i=0;i<info.h;++i)
+          for(size_t i=0;i<info.h;++i)
           {
-            auto pos = (1+len)*i;
+            size_t pos = (1+len)*i;
             color.put(data[pos]);
             alpha.put(data[pos]);
             auto line = data[pos+1..pos+1+len];
-            for (auto j=0; j<line.length; j+=2)
+            for (size_t j=0; j<line.length; j+=2)
             {
               color.put(line[j]);
               alpha.put(line[j+1]);
@@ -1413,14 +1413,14 @@ class Fpdf
         else
         {
           // Extract alpha imformation from RGB image
-          auto len = 4*info.w;
-          for(auto i=0;i<info.h;++i)
+          size_t len = 4*info.w;
+          for(size_t i=0;i<info.h;++i)
           {
-            auto pos = (1+len)*i;
+            size_t pos = (1+len)*i;
             color.put(data[pos]);
             alpha.put(data[pos]);
             auto line = data[pos+1..pos+1+len];
-            for (auto j=0; j<line.length; j+=4)
+            for (size_t j=0; j<line.length; j+=4)
             {
               color.put(line[j..j+3]);
               alpha.put(line[j+3]);
@@ -1435,6 +1435,7 @@ class Fpdf
       }
       else
         info.data = data;
+
       return info;
     }
 
@@ -1892,10 +1893,12 @@ struct FpdfTable
 
   void Row(string[] data, float lh)
   {
+    assert(data.length == widths.length);
+    assert(data.length == aligns.length);
     //Calculate the height of the row
-    ulong nb=0;
+    size_t nb=0;
 
-    for(ulong i=0;i<data.length;++i)
+    for(size_t i=0;i<data.length;++i)
       nb=max(nb,NbLines(widths[i],data[i]));
     auto h = lh * nb;
 
@@ -1903,7 +1906,7 @@ struct FpdfTable
     CheckPageBreak(h);
 
     //Draw the cells of the row
-    for(ulong i=0; i<data.length;++i)
+    for(size_t i=0; i<data.length;++i)
     {
         auto w=widths[i];
         auto a= (i<aligns.length) ? aligns[i] : "L";
