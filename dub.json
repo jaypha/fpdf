@@ -3,7 +3,6 @@
   "description": "Minimalist class for generating PDF documents.",
   "authors": [ "Jason den Dulk" ],
   "license": "BSL-1.0",
-  "platforms": ["posix"],
   "targetType": "sourceLibrary",
   "dependencies": { "imageformats" : ">=3.0.3" },
   "importPaths": [ "src" ],
@@ -14,7 +13,6 @@
     {
       "name": "sample",
       "targetType": "executable",
-      "platforms": ["posix"],
       "mainSourceFile": "examples/sample.d"
     }
   ]

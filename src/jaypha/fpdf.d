@@ -65,7 +65,7 @@ class Fpdf
   struct ImageInfo
   {
     size_t i,n;
-    size_t w,h;
+    ulong w,h;
     string cs;  // Color space
     uint bpc; // Bits per component.
     string f; // Filter
@@ -664,7 +664,7 @@ class Fpdf
 
   //---------------------------------
 
-  ulong AddLink()
+  size_t AddLink()
   {
     // Create a new internal link
     links ~= LinkDest(0, 0);
@@ -673,7 +673,7 @@ class Fpdf
 
   //---------------------------------
 
-  void SetLink(ulong link, float y=-1, ulong page=0)
+  void SetLink(size_t link, float y=-1, size_t page=0)
   {
     // Set destination of internal link
     if (y==-1)
@@ -685,7 +685,7 @@ class Fpdf
 
   //---------------------------------
 
-  void Link(float x, float y, float w, float h, ulong link)
+  void Link(float x, float y, float w, float h, size_t link)
   {
     // Put a link on the page
     PageLinks[page] ~= LinkInfo(x*k, hPt-y*k, w*k, h*k, link);
@@ -728,21 +728,21 @@ class Fpdf
   }
 
 
-  void Cell(float w, float h, string txt, string border, ulong ln, string algn, bool fill, ulong link)
+  void Cell(float w, float h, string txt, string border, size_t ln, string algn, bool fill, size_t link)
   {
     auto r = _cell(w, h, txt, border, ln, algn, fill);
     if (!txt.empty)
       Link(r.x,r.y,r.w,r.h,link);
   }
 
-  void Cell(float w, float h=0, string txt="", string border="0", ulong ln=0, string algn="", bool fill=false, string link=null)
+  void Cell(float w, float h=0, string txt="", string border="0", size_t ln=0, string algn="", bool fill=false, string link=null)
   {
     auto r = _cell(w, h, txt, border, ln, algn, fill);
     if (!link.empty && !txt.empty)
       Link(r.x,r.y,r.w,r.h,link);
   }
 
-  _rect _cell(float w, float h, string txt, string border, ulong ln, string algn, bool fill)
+  _rect _cell(float w, float h, string txt, string border, size_t ln, string algn, bool fill)
   {
     // Output a cell
 
@@ -948,7 +948,7 @@ class Fpdf
     _write(h, txt, link);
   }
 
-  void Write(float h, string txt, ulong link)
+  void Write(float h, string txt, size_t link)
   {
     _write(h, txt, link);
   }
@@ -1050,7 +1050,7 @@ class Fpdf
 
   //-----------------------------------
 
-  void Image(string file, float x, float y, float w, float h, string type, ulong link)
+  void Image(string file, float x, float y, float w, float h, string type, size_t link)
   {
     auto r = _image(file, x, y, w, h, type);
     Link(r.x,r.y,r.w,r.h,link);
@@ -1280,8 +1280,8 @@ class Fpdf
       info.data = cast(ubyte[]) read(file);
       auto ifImage = read_jpeg_from_mem(info.data);
 
-      info.w = ifImage.w;
-      info.h = ifImage.h;
+      info.w = cast(size_t) ifImage.w;
+      info.h = cast(size_t) ifImage.h;
       switch(ifImage.c)
       {
         case ColFmt.Y:
@@ -1395,7 +1395,7 @@ class Fpdf
         if (ct == 4)
         {
           // Extract alpha imformation from Gray image
-          auto len = 2*info.w;
+          auto len = cast(size_t) (2*info.w);
 
           for(size_t i=0;i<info.h;++i)
           {
@@ -1413,7 +1413,7 @@ class Fpdf
         else
         {
           // Extract alpha imformation from RGB image
-          size_t len = 4*info.w;
+          auto len = cast(size_t) (4*info.w);
           for(size_t i=0;i<info.h;++i)
           {
             size_t pos = (1+len)*i;
@@ -1896,7 +1896,7 @@ struct FpdfTable
     assert(data.length == widths.length);
     assert(data.length == aligns.length);
     //Calculate the height of the row
-    size_t nb=0;
+    ulong nb=0;
 
     for(size_t i=0;i<data.length;++i)
       nb=max(nb,NbLines(widths[i],data[i]));
